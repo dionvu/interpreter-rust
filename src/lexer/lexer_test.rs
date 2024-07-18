@@ -21,8 +21,7 @@ mod tests {
         x + y;
       };
 
-      let result = add(five, ten);
-      !-/*5;
+      != == while!
     "
     .to_string();
 
@@ -49,7 +48,9 @@ mod tests {
         expected_type: TokenType::SEMICOLON,
         expected_literal: ";".to_string(),
       },
-      // Newline
+      // NEW LINE
+      // NEW LINE
+      // NEW LINE
       LexerTest {
         expected_type: TokenType::LET,
         expected_literal: "let".to_string(),
@@ -91,6 +92,8 @@ mod tests {
         expected_literal: "{".to_string(),
       },
       // NEW LINE
+      // NEW LINE
+      // NEW LINE
       LexerTest {
         expected_type: TokenType::IDENT,
         expected_literal: "x".to_string(),
@@ -108,6 +111,8 @@ mod tests {
         expected_literal: ";".to_string(),
       },
       // NEW LINE
+      // NEW LINE
+      // NEW LINE
       LexerTest {
         expected_type: TokenType::RBRACE,
         expected_literal: "}".to_string(),
@@ -116,6 +121,30 @@ mod tests {
         expected_type: TokenType::SEMICOLON,
         expected_literal: ";".to_string(),
       },
+      // NEW LINE
+      // NEW LINE
+      // NEW LINE
+      LexerTest {
+        expected_type: TokenType::NOTEQ,
+        expected_literal: "!=".to_string(),
+      },
+      LexerTest {
+        expected_type: TokenType::EQ,
+        expected_literal: "==".to_string(),
+      },
+      // NEW LINE
+      // NEW LINE
+      // NEW LINE
+      LexerTest {
+        expected_type: TokenType::WHILE,
+        expected_literal: "while".to_string(),
+      },
+      LexerTest {
+        expected_type: TokenType::BANG,
+        expected_literal: "!".to_string(),
+      },
+      // EOF
+      // EOF
       // EOF
       LexerTest {
         expected_type: TokenType::EOF,

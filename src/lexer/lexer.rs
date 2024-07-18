@@ -80,16 +80,35 @@ impl Lexer {
       Some(',') => tok = new_token(token::TokenType::COMMA, ",".to_string()),
       Some(';') => tok = new_token(token::TokenType::SEMICOLON, ";".to_string()),
 
-      // Operators
-      Some('=') => tok = new_token(token::TokenType::ASSIGN, "=".to_string()),
-      Some('+') => tok = new_token(token::TokenType::PLUS, "+".to_string()),
-
       // Bracket and paren
       Some('(') => tok = new_token(token::TokenType::LPAREN, "(".to_string()),
       Some(')') => tok = new_token(token::TokenType::RPAREN, ")".to_string()),
       Some('{') => tok = new_token(token::TokenType::LBRACE, "{".to_string()),
       Some('}') => tok = new_token(token::TokenType::RBRACE, "}".to_string()),
 
+      // Operators
+      Some('+') => tok = new_token(token::TokenType::PLUS, "+".to_string()),
+
+      // Possible Double char operators
+      Some('!') => {
+        if self.peek_next_char() == Some('=') {
+          self.read_char();
+          tok = new_token(token::TokenType::NOTEQ, "!=".to_string())
+        } else {
+          tok = new_token(token::TokenType::BANG, "!".to_string())
+        }
+      }
+      Some('=') => {
+        if self.peek_next_char() == Some('=') {
+          self.read_char();
+          tok = new_token(token::TokenType::EQ, "==".to_string())
+        } else {
+          tok = new_token(token::TokenType::ASSIGN, "=".to_string())
+        }
+      }
+
+      // Ident and keywords
+      // or illegal
       Some(c) => {
         if is_letter(c) {
           let ident = self.read_ident();
@@ -110,6 +129,7 @@ impl Lexer {
         tok = new_token(token::TokenType::ILLEGAL, c.to_string());
       }
 
+      // EOF
       None => {
         tok = new_token(token::TokenType::EOF, "".to_string());
       }
@@ -118,6 +138,14 @@ impl Lexer {
     self.read_char();
 
     tok
+  }
+
+  fn peek_next_char(&self) -> Option<char> {
+    if self.next_pos >= self.input_len {
+      return None;
+    }
+
+    return Some(self.input_chars[self.next_pos]);
   }
 
   fn skip_whitespace(&mut self) {
