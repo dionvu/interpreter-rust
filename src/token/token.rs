@@ -6,6 +6,15 @@ pub struct Token {
   pub literal: String,
 }
 
+impl Token {
+  pub fn new(tt: TokenType, literal: String) -> Token {
+    Token {
+      token_type: tt,
+      literal,
+    }
+  }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
   ILLEGAL,

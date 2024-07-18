@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::token::token;
+use crate::token::token::{lookup_ident, Token, TokenType};
 use crate::utils::utils::{is_digit, is_letter};
 
 pub struct Lexer {
@@ -43,6 +43,75 @@ impl Lexer {
     self.next_pos += 1;
   }
 
+  pub fn next_token(&mut self) -> Token {
+    let tok: Token;
+
+    self.skip_whitespace();
+
+    match self.curr_char {
+      Some(',') => tok = Token::new(TokenType::COMMA, ",".to_string()),
+      Some(';') => tok = Token::new(TokenType::SEMICOLON, ";".to_string()),
+
+      // Bracket and paren
+      Some('(') => tok = Token::new(TokenType::LPAREN, "(".to_string()),
+      Some(')') => tok = Token::new(TokenType::RPAREN, ")".to_string()),
+      Some('{') => tok = Token::new(TokenType::LBRACE, "{".to_string()),
+      Some('}') => tok = Token::new(TokenType::RBRACE, "}".to_string()),
+
+      // Operators
+      Some('+') => tok = Token::new(TokenType::PLUS, "+".to_string()),
+
+      // Possible Double char operators
+      Some('!') => {
+        if self.peek_next_char() == Some('=') {
+          self.read_char();
+          tok = Token::new(TokenType::NOTEQ, "!=".to_string())
+        } else {
+          tok = Token::new(TokenType::BANG, "!".to_string())
+        }
+      }
+      Some('=') => {
+        if self.peek_next_char() == Some('=') {
+          self.read_char();
+          tok = Token::new(TokenType::EQ, "==".to_string())
+        } else {
+          tok = Token::new(TokenType::ASSIGN, "=".to_string())
+        }
+      }
+
+      // Ident and keywords
+      // or illegal
+      Some(c) => {
+        if is_letter(c) {
+          let ident = self.read_ident();
+
+          return Token {
+            literal: ident.clone(),
+            token_type: lookup_ident(&ident),
+          };
+        }
+
+        if is_digit(c) {
+          return Token {
+            literal: self.read_number(),
+            token_type: TokenType::INT,
+          };
+        }
+
+        tok = Token::new(TokenType::ILLEGAL, c.to_string());
+      }
+
+      // EOF
+      None => {
+        tok = Token::new(TokenType::EOF, "".to_string());
+      }
+    }
+
+    self.read_char();
+
+    tok
+  }
+
   fn read_ident(&mut self) -> String {
     let starting_pos = self.pos;
 
@@ -71,75 +140,6 @@ impl Lexer {
     self.input[starting_pos..self.pos].to_string()
   }
 
-  pub fn next_token(&mut self) -> token::Token {
-    let tok: token::Token;
-
-    self.skip_whitespace();
-
-    match self.curr_char {
-      Some(',') => tok = new_token(token::TokenType::COMMA, ",".to_string()),
-      Some(';') => tok = new_token(token::TokenType::SEMICOLON, ";".to_string()),
-
-      // Bracket and paren
-      Some('(') => tok = new_token(token::TokenType::LPAREN, "(".to_string()),
-      Some(')') => tok = new_token(token::TokenType::RPAREN, ")".to_string()),
-      Some('{') => tok = new_token(token::TokenType::LBRACE, "{".to_string()),
-      Some('}') => tok = new_token(token::TokenType::RBRACE, "}".to_string()),
-
-      // Operators
-      Some('+') => tok = new_token(token::TokenType::PLUS, "+".to_string()),
-
-      // Possible Double char operators
-      Some('!') => {
-        if self.peek_next_char() == Some('=') {
-          self.read_char();
-          tok = new_token(token::TokenType::NOTEQ, "!=".to_string())
-        } else {
-          tok = new_token(token::TokenType::BANG, "!".to_string())
-        }
-      }
-      Some('=') => {
-        if self.peek_next_char() == Some('=') {
-          self.read_char();
-          tok = new_token(token::TokenType::EQ, "==".to_string())
-        } else {
-          tok = new_token(token::TokenType::ASSIGN, "=".to_string())
-        }
-      }
-
-      // Ident and keywords
-      // or illegal
-      Some(c) => {
-        if is_letter(c) {
-          let ident = self.read_ident();
-
-          return token::Token {
-            literal: ident.clone(),
-            token_type: token::lookup_ident(&ident),
-          };
-        }
-
-        if is_digit(c) {
-          return token::Token {
-            literal: self.read_number(),
-            token_type: token::TokenType::INT,
-          };
-        }
-
-        tok = new_token(token::TokenType::ILLEGAL, c.to_string());
-      }
-
-      // EOF
-      None => {
-        tok = new_token(token::TokenType::EOF, "".to_string());
-      }
-    }
-
-    self.read_char();
-
-    tok
-  }
-
   fn peek_next_char(&self) -> Option<char> {
     if self.next_pos >= self.input_len {
       return None;
@@ -156,12 +156,5 @@ impl Lexer {
         _ => break,
       }
     }
-  }
-}
-
-fn new_token(tt: token::TokenType, literal: String) -> token::Token {
-  token::Token {
-    token_type: tt,
-    literal,
   }
 }
